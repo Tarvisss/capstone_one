@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div id="jam-space" class="full-width" style="background-image: url('{{ user.header_image_url }}');"></div>
+<img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="profile-avatar">
+<div class="row full-width">
+  <div class="container">
+    <div class="row justify-content-end">
+      <div class="col-9">
+        <ul class="user-stats nav nav-pills">
+          <li class="stat">
+            <p class="small">Posts</p>
+            <h4>
+              <a href="/users/{{ user.id }}">{{ user.posts | length }}</a>
+            </h4>
+          </li>
+          <li class="stat">
+            <p class="small">Following</p>
+            <h4>
+              <a href="/users/{{ user.id }}/following">{{ user.following | length }}</a>
+            </h4>
+          </li>
+          <li class="stat">
+            <p class="small">Followers</p>
+            <h4>
+              <a href="/users/{{ user.id }}/followers">{{ user.followers | length }}</a>
+            </h4>
+          </li>
+          <li class="stat">
+            <p class="small">Likes</p>
+            <h4>
+              <a href="/users/{{user.id}}/likes">{{ user.likes|length }}</a>
+            </h4>
+          </li>
+          <div class="ml-auto">
+            {% if g.user.id == user.id %}
+            <!-- <a href="/users/profile" class="btn btn-outline-secondary">Edit Profile</a>
+            <form method="POST" action="/users/delete" class="form-inline">
+              <button class="btn btn-outline-danger ml-2">Delete Profile</button>
+            </form> -->
+            {% elif g.user %}
+            {% if g.user.is_following(user) %}
+            <form method="POST" action="/users/stop-following/{{ user.id }}">
+              <button class="btn btn-primary">Unfollow</button>
+            </form>
+            {% else %}
+            <form method="POST" action="/users/follow/{{ user.id }}">
+              <button class="btn btn-outline-primary">Follow</button>
+            </form>
+            {% endif %}
+            {% endif %}
+          </div>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Personal info section -->
+<div class="row">
+  <h4 id="sidebar-username">@{{ user.username }}</h4>
+  <div class="col-sm-3">
+    <div class="accordion accordion-flush" id="accordionFlushExample">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingOne">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+            About Me
+          </button>
+        </h2>
+        <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+          <div class="accordion-body">{{ user.bio }}</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingTwo">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+            <span class="fa fa-map-marker">&nbsp;</span> Home City
+          </button>
+        </h2>
+        <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+          <div class="accordion-body">{{ user.location }}</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingThree">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+            Accordion Item #3
+          </button>
+        </h2>
+        <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+          <div class="accordion-body"></div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingThree">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+            Accordion Item #3
+          </button>
+        </h2>
+        <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+          <div class="accordion-body"></div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingThree">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+            Accordion Item #3
+          </button>
+        </h2>
+        <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+          <div class="accordion-body"></div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingThree">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+            Accordion Item #3
+          </button>
+        </h2>
+        <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+          <div class="accordion-body"></div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingThree">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+            Accordion Item #3
+          </button>
+        </h2>
+        <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+          <div class="accordion-body"></div>
+        </div>
+      </div>
+    </div>
+
+    
+
+  </div>
+
+  {% block user_details %}
+  
+  {% endblock %}
+
+</div>
+
+{% endblock %}
