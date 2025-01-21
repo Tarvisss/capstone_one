@@ -1,8 +1,10 @@
+from dotenv import load_dotenv
 import os
+import base64
 from flask import Flask, render_template, request, flash, redirect, session, g, abort, url_for
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
-
+import requests
 from forms import UserAddForm, LoginForm, PostForm, UserUpdateForm, PreSignupForm, MusicianForm, OrganizerForm, FanForm
 from models import db, connect_db, User, Post
 import pdb
@@ -12,6 +14,8 @@ CURRENT_USER_KEY = "curr_user"
 
 # Initialize the Flask app
 app = Flask(__name__)
+#Imported to load .env file 
+load_dotenv()
 
 # Configure the database URI for different environments.
 # The app will first try to get the URI from the environment variable (useful for production).
@@ -27,6 +31,13 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 # Set a secret key for session management
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+
+
+
+
 # Push app context (needed for debugging with the toolbar)
 app.app_context().push()
 
@@ -175,23 +186,30 @@ def list_users():
 # Route to show a user's profile
 @app.route('/users/<int:user_id>')
 def users_show(user_id):
-
     user = User.query.get_or_404(user_id)
 
-    # Fetch posts associated with the user
+    # Fetching the necessary data from the User model
     header_image_url = user.header_image_url
     bio = user.bio
     location = user.location
+    user_type = user.user_type
+
+    # Fetch the user's posts
     posts = (Post
                 .query
                 .filter(Post.user_id == user_id)
                 .order_by(Post.timestamp.desc())
                 .limit(100)
                 .all())
-    return render_template('users/show.html', user=user, posts=posts,
+
+    # Render the template with the necessary data
+    return render_template('users/show.html', 
+                           user=user, 
+                           posts=posts,
                            location=location,
                            bio=bio,
-                           header_image_url=header_image_url)
+                           header_image_url=header_image_url, 
+                           user_type=user_type)
 
 
 # Route to show users a list of people they are following
@@ -362,7 +380,7 @@ def profile():
                 dates_unavailable = organizer_form.dates_unavailable.data
                 venue_capacity = organizer_form.venue_capacity.data  
               # Add logic for updating fan fields
-                success = User.update_user_fan(
+                success = User.update_user_organizer(
                     g.user.id, 
                     organization_name, 
                     event_description, 
@@ -387,8 +405,10 @@ def profile():
                 band_name = musician_form.band_name.data
                 years_playing = musician_form.years_playing.data
                 music_achievments = musician_form.music_achievements.data  
+
+
               # Add logic for updating fan fields
-                success = User.update_user_fan(
+                success = User.update_user_musician(
                     g.user.id, 
                     members, 
                     music_style, 
@@ -441,6 +461,16 @@ def delete_user():
 
 ##############################################################################
 # posts routes
+
+
+# Get all a single users posts
+def get_user_posts(user_id=None):
+    if user_id is None:
+        user_id = g.user.id
+
+    posts = Post.query.filter_by(user_id=user_id).all()
+    return posts
+
 
 # Route to create a new message
 @app.route('/posts/new', methods=["GET", "POST"])
@@ -508,7 +538,113 @@ def homepage():
 
     else:
         return render_template('home-anon.html')
+    
 
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Artist search via Spotify API
+
+def get_spotify_token():
+    url = 'https://accounts.spotify.com/api/token'
+    
+    # Ensure CLIENT_ID and CLIENT_SECRET are loaded from .env file
+    
+    
+    if not CLIENT_ID or not CLIENT_SECRET:
+        print("CLIENT_ID or CLIENT_SECRET is missing!")
+        return None
+    
+    # Base64 encoding of CLIENT_ID:CLIENT_SECRET
+    credentials = f"{CLIENT_ID}:{CLIENT_SECRET}".encode('utf-8')
+    encoded_credentials = base64.b64encode(credentials).decode('utf-8')
+
+    headers = {
+        'Authorization': f'Basic {encoded_credentials}'
+    }
+    
+    data = {
+        'grant_type': 'client_credentials'
+    }
+
+    response = requests.post(url, headers=headers, data=data)
+
+    if response.status_code == 200:
+        token = response.json()['access_token']
+        print("Access Token:", token)
+        return token
+    else:
+        print("Error fetching token:", response.status_code)
+        print(response.text)  # Print the response text for more details
+        return None
+
+def search_artists_by_name(artist_name):
+    token = get_spotify_token()  # Get the token
+    # if not token:
+    #     print("Failed to get Spotify access token.")
+    #     return []  # Return empty if no token is found
+    
+    url = f"https://api.spotify.com/v1/search?q={artist_name}&type=artist"
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    
+    print(f"Requesting Spotify API with artist name: {artist_name}")
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        try:
+            data = response.json()
+            print("API response:", data)  # Print the API response to debug
+            return data['artists']['items']  # Return the list of artists
+        except KeyError:
+            print("Error: Unexpected JSON structure. Response:", response.json())
+            return []
+    else:
+        print(f"Error: Failed to fetch data from Spotify. Status Code: {response.status_code}")
+        print(f"Response: {response.text}")
+        return []
+
+
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    artists = []  # Initialize an empty list to store artist results
+    query = None  # Store the query to show on the page if needed
+    posts = get_user_posts()
+    if request.method == 'POST':
+        artist_name = request.form.get('artist_name')  # Get artist name from the form
+        if not artist_name:
+            return "No artist name provided.", 400  # Return error if no name is provided
+
+        artists = search_artists_by_name(artist_name)  # Fetch artist data based on the search query
+        query = artist_name  # Store the query for rendering in the template
+
+        if not artists:
+            return "No artists found.", 404  # Return error if no artists were found
+
+    # Render the template with artists (either the results or an empty list)
+    return render_template('users/show.html', artists=artists, query=query, user=g.user, posts=posts)
+
+
+@app.route('/artist/<artist_id>')
+def artist(artist_id):
+    artist_data = get_artist_data(artist_id)  # Get the artist data
+    posts = get_user_posts()
+    if not artist_data:
+        flash("Artist not found", "danger")
+        return redirect('users/show.html')  # Or handle the error more appropriately
+    
+    return render_template('users/show.html', artist=artist_data, user=g.user, posts=posts)  # Pass artist_data as artist
+
+def get_artist_data(artist_id):
+    token = get_spotify_token()
+    url = f'https://api.spotify.com/v1/artists/{artist_id}'
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    response = requests.get(url, headers=headers)
+    return response.json()
 
 ##############################################################################
 # Disable caching for the app (useful during development)

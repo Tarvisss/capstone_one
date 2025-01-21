@@ -85,7 +85,8 @@ class User(db.Model):
 
     # The users selected account type
     user_type = db.Column(db.Text, nullable=False)
-      # Add these fields for fan-specific data
+
+    # Add these fields for fan-specific data
     favorite_genre = db.Column(db.String(100))
 
     favorite_band = db.Column(db.String(100))
@@ -95,6 +96,31 @@ class User(db.Model):
     concert_ex = db.Column(db.Text)
 
     music_preference = db.Column(db.Text)
+
+    # Add these fields for organizer-specific data
+    organization_name = db.Column(db.Text)
+
+    event_description = db.Column(db.String(100))
+
+    venue_locations = db.Column(db.String(100))
+
+    dates_unavailable = db.Column(db.Text)
+
+    venue_capacity = db.Column(db.Text)
+
+    # Add these fields for musician-specific data
+    members = db.Column(db.String(100))
+
+    music_style = db.Column(db.String(100))
+
+    band_name = db.Column(db.String(100))
+
+    years_playing= db.Column(db.Text)
+
+    music_achievments = db.Column(db.Text)
+
+
+
 
     # Relationship for a user to have many posts
     posts = db.relationship('Post')
@@ -210,7 +236,7 @@ class User(db.Model):
             return False
     
     @classmethod
-    def update_user_organizer(cls, user_id, favorite_genre, favorite_band, favorite_song, concert_ex, music_preference):
+    def update_user_organizer(cls, user_id, organization_name, event_description, venue_locations, dates_unavailable, venue_capacity):
         """Updates user."""
         
         # Find the user by their ID
@@ -218,11 +244,11 @@ class User(db.Model):
 
         if user:
             # Update user attributes with the provided values
-            user.favorite_genre = favorite_genre
-            user.favorite_band = favorite_band
-            user.favorite_song = favorite_song
-            user.concert_ex = concert_ex
-            user.music_pereference = music_preference
+            user.organization_name = organization_name
+            user.event_description = event_description
+            user.venue_locations = venue_locations
+            user.dates_unavailable = dates_unavailable
+            user.venue_capacity = venue_capacity
 
             # Commit the changes to persist them in the database
             db.session.commit()
@@ -232,7 +258,7 @@ class User(db.Model):
         
 
     @classmethod
-    def update_user_musician(cls, user_id, favorite_genre, favorite_band, favorite_song, concert_ex, music_preference):
+    def update_user_musician(cls, user_id, members, music_style, band_name, years_playing, music_achievments):
         """Updates user."""
         
         # Find the user by their ID
@@ -240,11 +266,11 @@ class User(db.Model):
 
         if user:
             # Update user attributes with the provided values
-            user.favorite_genre = favorite_genre
-            user.favorite_band = favorite_band
-            user.favorite_song = favorite_song
-            user.concert_ex = concert_ex
-            user.music_pereference = music_preference
+            user.members = members
+            user.music_style = music_style
+            user.band_name = band_name
+            user.years_playing = years_playing
+            user.music_achievments = music_achievments
 
             # Commit the changes to persist them in the database
             db.session.commit()

@@ -38,28 +38,28 @@ class LoginForm(FlaskForm):
 
 
 class FanForm(FlaskForm):
-    favorite_genre = StringField('Favorite Genre', validators=[DataRequired()])
-    favorite_band = StringField('Favorite Band', validators=[DataRequired()])
-    favorite_song = StringField('Favorite Song', validators=[DataRequired()])
-    concert_ex = TextAreaField('Concert Experience')
+    favorite_genre = StringField('Favorite Genre', default="")
+    favorite_band = StringField('Favorite Band', default="")
+    favorite_song = StringField('Favorite Song', default="")
+    concert_ex = TextAreaField('Concert Experience', default="")
     music_preference = TextAreaField('Music Preference')
     # submit = SubmitField('Save Fan Profile')
 
 # Organizer-specific fields
 class OrganizerForm(FlaskForm):
-    organization_name = StringField('Name of your organization ', default=None, validators=[DataRequired()])
-    event_description = TextAreaField('Types of events you host.',default=None, validators=[DataRequired()])
-    venue_locations = StringField('Event Location.',default=None, validators=[DataRequired()])
-    dates_unavailable = StringField('Dates the venue is not in operation''.',default=None, validators=[DataRequired()])
-    venue_capacity = StringField('Our Venues capacity is.', default=None, validators=[DataRequired()])
+    organization_name = StringField('Name of your organization ', default="")
+    event_description = TextAreaField('Types of events you host.',default="")
+    venue_locations = StringField('Event Location.',default="")
+    dates_unavailable = StringField('Dates the venue is not in operation',default="")
+    venue_capacity = StringField('Our Venues capacity is.', default="")
     # submit = SubmitField('Save Organizer Profile')
 
 # Musician-specific fields
 class MusicianForm(FlaskForm):
-    members = StringField('list memebers and their position in the band',default=None, validators=[DataRequired()])
-    music_style = StringField('Musicial Style',default=None, validators=[DataRequired()])
-    band_name = StringField('Band Name',default=None, validators=[DataRequired()])
-    years_playing = StringField('Years Playing',default=None, validators=[DataRequired()])
+    members = StringField('list memebers and their position in the band',default="")
+    music_style = StringField('Musicial Style',default="")
+    band_name = StringField('Band Name',default="")
+    years_playing = StringField('Years Playing')
     music_achievements = TextAreaField('Music Achievements', default="I'm a newbie",)
     # submit = SubmitField('Save Musician Profile')
 

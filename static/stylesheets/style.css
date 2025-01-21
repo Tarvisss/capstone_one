@@ -211,8 +211,8 @@ nav + .container {
 }
 
 #jam-space {
-  height: 360px;
-  margin-top: -16px;
+  height: 380px;
+  margin-top: 16px;
   /* opacity: 0.7; */
   background-size: cover;
   background-position: top center;

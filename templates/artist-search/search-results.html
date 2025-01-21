@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Artist Search Results</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+    <ul>
+        {% for artist in artists %}
+            <li>
+                <a href="/artist/{{ artist.id }}">
+                    <img src="{{ artist.images[0]['url'] if artist.images else '/static/images/default-artist.jpg' }}" alt="Artist Image" width="50">
+
+                    {{ artist.name }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
