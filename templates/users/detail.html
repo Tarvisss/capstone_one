@@ -2,14 +2,19 @@
 
 {% block content %}
 
-<div id="jam-space" class="full-width" style="background-image: url('{{ user.header_image_url }}');"></div>
-<img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="profile-avatar">
+<div id="jam-space" class="full-width" style="background-image: url('{{ user.header_image_url }}');">
+
+</div>
+<div class="container d-flex justify-content-center">
+  <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="profile-avatar">
+</div>
+
 
 <!-- Stats Section -->
-<div class="row full-width">
-  <div class="container">
-    <div class="row justify-content-end">
-      <div class="col-9">
+<div class="row">
+  <div class="container d-flex justify-content-center">
+    <div class="row g-2">
+      <div>
         <ul class="user-stats nav nav-pills">
           <li class="stat">
             <p class="small">Posts</p>
@@ -41,276 +46,59 @@
   </div>
 </div>
 
-<!-- Personal info section -->
- <div style="padding: 1rem;">
-<h4 id="sidebar-username">@{{ user.username }}</h4>
-  {{ user.bio }}
-</div>
-
-
-<div class="container">
-    <div class="row">
-          
-        <div class="col align-self-start">
-        <div class="accordion-container">
-          
-            <div class="accordion accordion-flush" id="accordionFlushExample">
-            
-              <!-- About Me Section for each user_type -->
-            <div class="col-md-8">
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingOne">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                    <span class="fa fa-map-marker">&nbsp;</span> Home City
-                  </button>
-                </h2>
-                <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.location }}</div>
-                </div>
-              </div>
-            
-            {% if user_type == 'fan' %}  
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingTwo">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
-                    favorite genre of music
-                  </button>
-                </h2>
-                <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.favorite_genre}}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingThree">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
-                    Favorite band
-                  </button>
-                </h2>
-                <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.favorite_band }}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingFour">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFour" aria-expanded="false" aria-controls="flush-collapseFour">
-                    Favorite song
-                  </button>
-                </h2>
-                <div id="flush-collapseFour" class="accordion-collapse collapse" aria-labelledby="flush-headingFour" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.favorite_song }}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingFive">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFive" aria-expanded="false" aria-controls="flush-collapseFive">
-                    Most memorable concert experience
-                  </button>
-                </h2>
-                <div id="flush-collapseFive" class="accordion-collapse collapse" aria-labelledby="flush-headingFive" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.concert_ex }}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingSix">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseSix" aria-expanded="false" aria-controls="flush-collapseSix">
-                    This song is the most over rated.
-                  </button>
-                </h2>
-                <div id="flush-collapseSix" class="accordion-collapse collapse" aria-labelledby="flush-headingSix" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.overplayed_song }}</div>
-                </div>
-              </div>
-            
-            {% elif user_type == 'organizer' %}   
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingTwo">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
-                    Organization Info.
-                  </button>
-                </h2>
-                <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.organization_name}}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingThree">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
-                    Events.
-                  </button>
-                </h2>
-                <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.event_description }}</div>
-                </div>
-              </div>
-            
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingFour">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFour" aria-expanded="false" aria-controls="flush-collapseFour">
-                    Location of Venues.
-                  </button>
-                </h2>
-                <div id="flush-collapseFour" class="accordion-collapse collapse" aria-labelledby="flush-headingFour" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.venue_locations }}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingFive">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFive" aria-expanded="false" aria-controls="flush-collapseFive">
-                    We are unavialable on these dates.
-                  </button>
-                </h2>
-                <div id="flush-collapseFive" class="accordion-collapse collapse" aria-labelledby="flush-headingFive" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.dates_unavailable }}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingSix">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseSix" aria-expanded="false" aria-controls="flush-collapseSix">
-                    Venue capacity.
-                  </button>
-                </h2>
-                <div id="flush-collapseSix" class="accordion-collapse collapse" aria-labelledby="flush-headingSix" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.venue_capacity }}</div>
-                </div>
-              </div>
-            
-            {% elif user_type == 'musician' %}
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingTwo">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
-                    Band members.
-                  </button>
-                </h2>
-                <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.members}}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingThree">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
-                    Music Style.
-                  </button>
-                </h2>
-                <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.music_style }}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingFour">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFour" aria-expanded="false" aria-controls="flush-collapseFour">
-                    Band Name.
-                  </button>
-                </h2>
-                <div id="flush-collapseFour" class="accordion-collapse collapse" aria-labelledby="flush-headingFour" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.band_name }}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingFive">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFive" aria-expanded="false" aria-controls="flush-collapseFive">
-                    Latest Release.
-                  </button>
-                </h2>
-                <div id="flush-collapseFive" class="accordion-collapse collapse" aria-labelledby="flush-headingFive" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.latest_release }}</div>
-                </div>
-              </div>
-            
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingSix">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseSix" aria-expanded="false" aria-controls="flush-collapseSix">
-                    Music Achievments
-                  </button>
-                </h2>
-                <div id="flush-collapseSix" class="accordion-collapse collapse" aria-labelledby="flush-headingSix" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">{{ user.music_achievments }}</div>
-                </div>
-              </div>
-            {% endif %}
-            </div>  
-          </div>
-      
-      </div>
-    </div>
-      
-    <div class="col-md-8">
         {% block user_details %}
           
         {% endblock %}
-    </div>
-      
-  </div>
-</div>
-
+<hr style="border: 2px solid rgb(255, 255, 255);">
 
 <!-- Search for Artist Section (Left Side) -->
 
-  <div class="container-fluid">
-    <div class="container">
-      <div class="row">
-        
-        <div class="col-sm-9">
-          <div class="container">
-            <h1>Search for an Artist</h1>
-            <form method="POST" action="/search">
-              <input type="text" name="artist_name" placeholder="Enter artist name" required class="form-control mb-2">
-              <button type="submit" class="btn btn-primary w-100">Search</button>
-            </form>
-          </div>
-        </div>
-      
-        <!-- Search Results Section (Right Side) -->
-        <div class="col-sm-3">
-          <div class="container">
-            {% if artists %}
-              <h1>Search Results</h1>
-              <ul>
-                {% for artist in artists %}
-                  <li>
-                    <a href="/artist/{{ artist.id }}">
-                      <img src="{{ artist.images[0]['url'] if artist.images else '/static/images/default-artist.jpg' }}" alt="Artist Image" width="50">
-                      {{ artist.name }}
-                    </a>
-                  </li>
-                {% endfor %}
-              </ul>
-            {% endif %}
+<div class="container">
+  <div class="row justify-content-center">
+    <!-- Search Form Section -->
+    <div class="col-md-6">
+      <h1>Search for an Artist</h1>
+      <form method="POST" action="/search">
+        <input type="text" name="artist_name" placeholder="Enter artist name" required class="form-control mb-2">
+        <button type="submit" class="btn btn-primary w-100">Search</button>
+      </form>
+    </div>
+
+    <!-- Search Results Section -->
+    <div class="col-md-6">
+      {% if artists %}
+        <h1>Search Results</h1>
+        <ul class="list-group">
+          {% for artist in artists %}
+            <li class="list-group-item">
+              <a href="/artist/{{ artist.id }}">
+                <img src="{{ artist.images[0]['url'] if artist.images else '/static/images/default-artist.jpg' }}" alt="Artist Image" width="50">
+                {{ artist.name }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Artist Details Section (If an artist is selected) -->
+  {% if artist %}
+    <div class="artist-card-container mt-4">
+      <div class="card" style="width: 18rem;">
+        <div id="artist-details">
+          <h5 class="card-title">{{ artist.name }}</h5>
+          <img src="{{ artist.images[0]['url'] if artist.images else '/static/images/default-artist.jpg' }}" alt="Artist Image" width="200">
+          <div class="card-body">
+            <p><strong>Genres:</strong> {{ artist.genres | join(', ') }}</p>
+            <p><strong>Followers:</strong> {{ artist.followers.total }}</p>
+            <p><strong>Popularity:</strong> {{ artist.popularity }}</p>
           </div>
         </div>
       </div>
     </div>
-
-
-     <div class="artist-card-container">
-      <!-- Artist Details Card -->
-      <div class="artist-card card" style="width: 18rem;">
-        <div id="artist-details">
-          {% if artist %}
-            <h5 class="card-title">{{ artist.name }}</h5>
-            <img src="{{ artist.images[0]['url'] if artist.images else '/static/images/default-artist.jpg' }}" alt="Artist Image" width="200">
-            <div class="card-text">
-              <p><strong>Genres:</strong> {{ artist.genres | join(', ') }}</p>
-              <p><strong>Followers:</strong> {{ artist.followers.total }}</p>
-              <p><strong>Popularity:</strong> {{ artist.popularity }}</p>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-  </div>
+  {% endif %}
+</div>
   
     
 {% endblock %}
