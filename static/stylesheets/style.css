@@ -22,16 +22,26 @@ body.error-404 {
 
 /* ======================= Nav */
 
+/* ======================= Nav */
 .navbar {
   padding-right: 3.8rem;
   background-color: #edf5ff;
   height: 50px;
   border-bottom: 4px solid rgba(0, 0, 0, 0.25);
-  /* border-radius: 15%; */
   margin-bottom: 1rem;
-  position: relative;
-  z-index: 9999;
+  position: fixed; /* This makes the navbar fixed at the top */
+  top: 0; /* Keeps it at the top */
+  left: 0; /* Ensure it spans the full width */
+  width: 100%; /* Full width */
+  z-index: 9999; /* Ensures it stays above other content */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Optional: Adds a small shadow for separation */
 }
+
+/* Optional: Add padding to the body or container so that content doesn't hide under the navbar */
+body {
+  padding-top: 50px; /* Same height as the navbar to prevent content from being covered */
+}
+
 
 .navbar a {
   color: #000000;
@@ -558,4 +568,38 @@ p.card-bio {
 
 .message-404 .form-inline input {
   flex: 1;
+}
+/* accordion Section 
+================================================*/
+
+.artist-card-container {
+  
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.artist-card {
+  margin-top: 1rem;
+  align-items: center;
+  flex: 1;
+  max-width: 300px;
+  /* Prevents the card from being too large */
+}
+
+.accordion-container {
+  flex-grow: 1; /* Ensure the accordion can take up remaining space */
+  max-width: 100%;
+  overflow-y: auto; /* Ensure it scrolls if content overflows */
+  height: auto; /* Let it adjust based on content */
+  max-height: 600px; /* Optional: if you want to limit the height */
+}
+
+
+
+/* Spotify Artist Display Section 
+==================================================*/
+#artist-details img {
+  width: 250px;
+  height: 250px;
 }

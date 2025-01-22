@@ -42,12 +42,12 @@ class FanForm(FlaskForm):
     favorite_band = StringField('Favorite Band', default="")
     favorite_song = StringField('Favorite Song', default="")
     concert_ex = TextAreaField('Concert Experience', default="")
-    music_preference = TextAreaField('Music Preference')
+    overplayed_song = TextAreaField('Most over played song.')
     # submit = SubmitField('Save Fan Profile')
 
 # Organizer-specific fields
 class OrganizerForm(FlaskForm):
-    organization_name = StringField('Name of your organization ', default="")
+    organization_name = StringField('organization info ', default="")
     event_description = TextAreaField('Types of events you host.',default="")
     venue_locations = StringField('Event Location.',default="")
     dates_unavailable = StringField('Dates the venue is not in operation',default="")
@@ -59,7 +59,7 @@ class MusicianForm(FlaskForm):
     members = StringField('list memebers and their position in the band',default="")
     music_style = StringField('Musicial Style',default="")
     band_name = StringField('Band Name',default="")
-    years_playing = StringField('Years Playing')
+    latest_release = StringField('Latest Release', default='Coming Soon')
     music_achievements = TextAreaField('Music Achievements', default="I'm a newbie",)
     # submit = SubmitField('Save Musician Profile')
 

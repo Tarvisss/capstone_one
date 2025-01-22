@@ -179,7 +179,7 @@ def list_users():
         # Filter users by matching username
         users = User.query.filter(User.username.like(f"%{search}%")).all()
 
-    return render_template('users/index.html', users=users)
+    return render_template('users/index.html', users=users, user_type=g.user.user_type)
 
 
 
@@ -221,7 +221,7 @@ def show_following(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/following.html', user=user)
+    return render_template('users/following.html', user=user, user_type=g.user.user_type)
 
 
 # Route to show users a list of followers
@@ -233,7 +233,7 @@ def users_followers(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user)
+    return render_template('users/followers.html', user=user, user_type=g.user.user_type)
 
 
 # Route to add a follow relationship for the logged-in user
@@ -274,7 +274,7 @@ def show_likes(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/likes.html', user=user, likes=user.likes)
+    return render_template('users/likes.html', user=user, likes=user.likes, user_type=g.user.user_type)
 
 
 # Route to add or remove a like for a message
@@ -351,7 +351,7 @@ def profile():
                 favorite_band = fan_form.favorite_band.data
                 favorite_song = fan_form.favorite_song.data
                 concert_ex = fan_form.concert_ex.data
-                music_preference = fan_form.music_preference.data  
+                overplayed_song = fan_form.overplayed_song.data  
               # Add logic for updating fan fields
                 success = User.update_user_fan(
                     g.user.id, 
@@ -359,7 +359,7 @@ def profile():
                     favorite_band, 
                     favorite_song, 
                     concert_ex, 
-                    music_preference
+                    overplayed_song
                 )
 
                 if success:
@@ -403,7 +403,7 @@ def profile():
                 members = musician_form.members.data
                 music_style= musician_form.music_style.data
                 band_name = musician_form.band_name.data
-                years_playing = musician_form.years_playing.data
+                latest_release = musician_form.latest_release.data
                 music_achievments = musician_form.music_achievements.data  
 
 
@@ -413,7 +413,7 @@ def profile():
                     members, 
                     music_style, 
                     band_name, 
-                    years_playing, 
+                    latest_release, 
                     music_achievments
                 )
 
@@ -534,7 +534,7 @@ def homepage():
                     .all())
         liked_post_ids = [post.id for post in g.user.likes]
 
-        return render_template('home.html', posts=posts, likes=liked_post_ids)
+        return render_template('home.html', posts=posts, likes=liked_post_ids, user_type=g.user.user_type)
 
     else:
         return render_template('home-anon.html')
@@ -611,7 +611,10 @@ def search_artists_by_name(artist_name):
 def search():
     artists = []  # Initialize an empty list to store artist results
     query = None  # Store the query to show on the page if needed
+    
+    # Assuming get_user_posts() fetches posts for the current user
     posts = get_user_posts()
+    
     if request.method == 'POST':
         artist_name = request.form.get('artist_name')  # Get artist name from the form
         if not artist_name:
@@ -622,20 +625,29 @@ def search():
 
         if not artists:
             return "No artists found.", 404  # Return error if no artists were found
+ 
+    # Ensure `user_type` is passed to the template along with other context variables
+    return render_template(
+        'users/show.html', 
+        artists=artists, 
+        query=query, 
+        user=g.user,  # Assuming 'g.user' contains the current user object
+        user_type=g.user.user_type,  # Add user_type to context
+        posts=posts
+    )
 
-    # Render the template with artists (either the results or an empty list)
-    return render_template('users/show.html', artists=artists, query=query, user=g.user, posts=posts)
 
 
 @app.route('/artist/<artist_id>')
 def artist(artist_id):
     artist_data = get_artist_data(artist_id)  # Get the artist data
+    
     posts = get_user_posts()
     if not artist_data:
         flash("Artist not found", "danger")
         return redirect('users/show.html')  # Or handle the error more appropriately
     
-    return render_template('users/show.html', artist=artist_data, user=g.user, posts=posts)  # Pass artist_data as artist
+    return render_template('users/show.html', artist=artist_data, user=g.user, posts=posts, user_type=g.user.user_type)  # Pass artist_data as artist
 
 def get_artist_data(artist_id):
     token = get_spotify_token()

@@ -95,7 +95,7 @@ class User(db.Model):
 
     concert_ex = db.Column(db.Text)
 
-    music_preference = db.Column(db.Text)
+    overplayed_song = db.Column(db.Text)
 
     # Add these fields for organizer-specific data
     organization_name = db.Column(db.Text)
@@ -115,7 +115,7 @@ class User(db.Model):
 
     band_name = db.Column(db.String(100))
 
-    years_playing= db.Column(db.Text)
+    latest_release= db.Column(db.Text)
 
     music_achievments = db.Column(db.Text)
 
@@ -215,7 +215,7 @@ class User(db.Model):
             return False
 
     @classmethod
-    def update_user_fan(cls, user_id, favorite_genre, favorite_band, favorite_song, concert_ex, music_preference):
+    def update_user_fan(cls, user_id, favorite_genre, favorite_band, favorite_song, concert_ex, overplayed_song):
         """Updates user."""
         
         # Find the user by their ID
@@ -227,7 +227,7 @@ class User(db.Model):
             user.favorite_band = favorite_band
             user.favorite_song = favorite_song
             user.concert_ex = concert_ex
-            user.music_pereference = music_preference
+            user.overplayed_song = overplayed_song
 
             # Commit the changes to persist them in the database
             db.session.commit()
@@ -258,7 +258,7 @@ class User(db.Model):
         
 
     @classmethod
-    def update_user_musician(cls, user_id, members, music_style, band_name, years_playing, music_achievments):
+    def update_user_musician(cls, user_id, members, music_style, band_name, latest_release, music_achievments):
         """Updates user."""
         
         # Find the user by their ID
@@ -269,7 +269,7 @@ class User(db.Model):
             user.members = members
             user.music_style = music_style
             user.band_name = band_name
-            user.years_playing = years_playing
+            user.latest_release = latest_release
             user.music_achievments = music_achievments
 
             # Commit the changes to persist them in the database
