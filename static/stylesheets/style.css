@@ -413,7 +413,7 @@ p.card-bio {
 }
 #home-bottom-banner {
   width: 100%;
-  height: auto; /* To maintain the aspect ratio */
+  height: 60px; /* To maintain the aspect ratio */
   display: block; /* Remove extra space below the image */
   margin: 0; /* Remove any unwanted margin */
   padding: 0; /* Remove any unwanted padding */

@@ -315,7 +315,7 @@ class Post(db.Model):
 
     # The text content of the message (max 140 characters)
     text = db.Column(
-        db.String(140),
+        db.Text,
         nullable=False,
     )
 
