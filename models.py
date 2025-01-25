@@ -170,10 +170,7 @@ class User(db.Model):
     # Class method to create and sign up a new user
     @classmethod
     def signup(cls, username, email, password, image_url, user_type):
-        """Sign up user.
-
-        Hashes password and adds user to system.
-        """
+       
 
         # Hash the password using bcrypt
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
@@ -194,7 +191,6 @@ class User(db.Model):
     # Class method to update an existing user's information
     @classmethod
     def update_user(cls, user_id, username, email, image_url, bio, header_image_url, location):
-        """Updates user."""
         
         # Find the user by their ID
         user = cls.query.get(user_id)
@@ -216,7 +212,6 @@ class User(db.Model):
 
     @classmethod
     def update_user_fan(cls, user_id, favorite_genre, favorite_band, favorite_song, concert_ex, overplayed_song):
-        """Updates user."""
         
         # Find the user by their ID
         user = cls.query.get(user_id)
@@ -237,7 +232,7 @@ class User(db.Model):
     
     @classmethod
     def update_user_organizer(cls, user_id, organization_name, event_description, venue_locations, dates_unavailable, venue_capacity):
-        """Updates user."""
+
         
         # Find the user by their ID
         user = cls.query.get(user_id)
@@ -259,7 +254,6 @@ class User(db.Model):
 
     @classmethod
     def update_user_musician(cls, user_id, members, music_style, band_name, latest_release, music_achievments):
-        """Updates user."""
         
         # Find the user by their ID
         user = cls.query.get(user_id)
@@ -339,10 +333,6 @@ class Post(db.Model):
 
 # Function to connect the database to the Flask app
 def connect_db(app):
-    """Connect this database to provided Flask app.
-
-    You should call this in your Flask app.
-    """
 
     db.app = app  # Assign the Flask app to the db object
     db.init_app(app)  # Initialize the db with the Flask app

@@ -1,6 +1,6 @@
 
 from app import db
-from models import User, Post, Follows
+from models import User
 
 
 db.drop_all()

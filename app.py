@@ -7,7 +7,6 @@ from sqlalchemy.exc import IntegrityError
 import requests
 from forms import UserAddForm, LoginForm, PostForm, UserUpdateForm, PreSignupForm, MusicianForm, OrganizerForm, FanForm
 from models import db, connect_db, User, Post
-import pdb
 
 # Constant for current user session key
 CURRENT_USER_KEY = "curr_user"
@@ -16,20 +15,13 @@ CURRENT_USER_KEY = "curr_user"
 app = Flask(__name__)
 #Imported to load .env file 
 load_dotenv()
-
-# Configure the database URI for different environments.
-# The app will first try to get the URI from the environment variable (useful for production).
-# If the environment variable is not set, it will default to the local PostgreSQL database.
+LOCAL_DB = os.getenv('LOCAL_DB')
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    os.environ.get('SUPABASE_DB_URL', 'postgresql://tarvis:73311234@localhost:5432/jam_space'))
+    os.environ.get('SUPABASE_DB_URL', f'{LOCAL_DB}'))
 
-# Disable tracking modifications of objects in SQLAlchemy (to save memory)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# Disable SQL statement echoing to the console
 app.config['SQLALCHEMY_ECHO'] = False
-# Prevent Flask Debug Toolbar from intercepting redirects
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
-# Set a secret key for session management
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -76,84 +68,93 @@ def do_logout():
 @app.route('/pre-signup', methods=["GET", "POST"])
 def preSignup():
     form = PreSignupForm()
+    try:
+        if form.validate_on_submit():
+            choice = form.choice.data  
 
-    if form.validate_on_submit():
-        choice = form.choice.data  # Get the selected option from the radio button
+            # Redirect to the appropriate signup page based on the user's choice
+            if choice == '1':
+                return redirect(url_for('signup', user_type='fan'))
+            elif choice == '2':
+                return redirect(url_for('signup', user_type='organizer'))
+            elif choice == '3':
+                return redirect(url_for('signup', user_type='musician'))
 
-        # Redirect to the appropriate signup page based on the user's choice
-        if choice == '1':
-            return redirect(url_for('signup', user_type='fan'))
-        elif choice == '2':
-            return redirect(url_for('signup', user_type='organizer'))
-        elif choice == '3':
-            return redirect(url_for('signup', user_type='musician'))
-
-    return render_template('pre-signup-question.html', form=form)
-
+        return render_template('pre-signup-question.html', form=form)
+    except Exception as err:
+        flash(f"Must be one of the choices {err}")
+        return render_template('pre-signup-question.html', form=form)
 
 # Route for user signup
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
-    user_type = request.args.get('user_type')  # Get the user type from the URL query parameter
-    form = UserAddForm()
+    try:    
+        user_type = request.args.get('user_type')  # Get the user type from the URL query parameter
+        form = UserAddForm()
 
-    # Adjust the form or logic based on user_type
-    if user_type == 'fan':
-        # Customize form for 'fan' if necessary
-        form.type.data = 'fan'  # You can add a hidden field or use this to store user type in the DB
-    elif user_type == 'organizer':
-        # Customize form for 'organizer'
-        form.type.data = 'organizer'
-    elif user_type == 'musician':
-        # Customize form for 'musician'
-        form.type.data = 'musician'
-    
-    if form.validate_on_submit():
-        try:
-            # Create a new user and save it to the database with the user type
-            user = User.signup(
-                username=form.username.data,
-                password=form.password.data,
-                email=form.email.data,
-                image_url=form.image_url.data or "/static/images/default-pic.png",
-                user_type=form.type.data,  # Store the user type in the DB
-            )
-            db.session.commit()
-        except IntegrityError:
-            flash("Username already taken", 'danger')
-            return render_template('users/signup.html', form=form)
+        # Adjust the form or logic based on user_type
+        if user_type == 'fan':
+            # Customize form for 'fan' if necessary
+            form.type.data = 'fan'  # You can add a hidden field or use this to store user type in the DB
+        elif user_type == 'organizer':
+            # Customize form for 'organizer'
+            form.type.data = 'organizer'
+        elif user_type == 'musician':
+            # Customize form for 'musician'
+            form.type.data = 'musician'
 
-        # Log the user in after signing up
-        do_login(user)
+        if form.validate_on_submit():
+            try:
+                # Create a new user and save it to the database with the user type
+                user = User.signup(
+                    username=form.username.data,
+                    password=form.password.data,
+                    email=form.email.data,
+                    image_url=form.image_url.data or "/static/images/default-pic.png",
+                    user_type=form.type.data,  # Store the user type in the DB
+                )
+                db.session.commit()
+            except IntegrityError:
+                flash("Username already taken", 'danger')
+                return render_template('users/signup.html', form=form)
 
-        # Redirect to the homepage after successful signup
-        return redirect("/")
+            # Log the user in after signing up
+            do_login(user)
 
-    return render_template('users/signup.html', form=form, user_type=user_type)
+            # Redirect to the homepage after successful signup
+            return redirect("/")
+
+        return render_template('users/signup.html', form=form, user_type=user_type)
+    except Exception as err:
+        flash(f"Must be of type Musician, Organizer, fan {err}")
+        return render_template('users/signup.html', form=form)
 
 
 
 # Route for user login
 @app.route('/login', methods=["GET", "POST"])
 def login():
-        
-    form = LoginForm()
+    try:   
 
-    if form.validate_on_submit():
-        # Try to authenticate the user
-        user = User.authenticate(form.username.data, form.password.data)
+        form = LoginForm()
 
-        if user:
-            # Log in the user if authentication is successful
-            do_login(user)
-            flash(f"Hello, {user.username}!", "success")
-            return redirect("/")
+        if form.validate_on_submit():
+            # Try to authenticate the user
+            user = User.authenticate(form.username.data, form.password.data)
 
-        # Flash an error message if credentials are invalid
-        flash("Invalid credentials.", 'danger')
+            if user:
+                # Log in the user if authentication is successful
+                do_login(user)
+                flash(f"Hello, {user.username}!", "success")
+                return redirect("/")
 
-    return render_template('users/login.html', form=form)
+            # Flash an error message if credentials are invalid
+            flash("Invalid credentials.", 'danger')
 
+        return render_template('users/login.html', form=form)
+    except Exception as err:
+        flash(f"error {err}")
+        return render_template('users/login.html', form=form)
 
 # Route for logging out a user
 @app.route('/logout')
@@ -170,265 +171,291 @@ def logout():
 # Route to list all users or search users by username
 @app.route('/users')
 def list_users():
+    try:    
 
-    search = request.args.get('q')
+        search = request.args.get('q')
 
-    if not search:
-        users = User.query.all()  # Get all users
-    else:
-        # Filter users by matching username
-        users = User.query.filter(User.username.like(f"%{search}%")).all()
+        if not search:
+            users = User.query.all()  # Get all users
+        else:
+            # Filter users by matching username
+            users = User.query.filter(User.username.like(f"%{search}%")).all()
 
-    return render_template('users/index.html', users=users, user_type=g.user.user_type)
-
+        return render_template('users/index.html', users=users, user_type=g.user.user_type)
+    except Exception as err:
+        flash(f"error {err}")
+        return redirect("/")
 
 
 # Route to show a user's profile
 @app.route('/users/<int:user_id>')
 def users_show(user_id):
-    user = User.query.get_or_404(user_id)
+    try:
+        user = User.query.get_or_404(user_id)
 
-    # Fetching the necessary data from the User model
-    header_image_url = user.header_image_url
-    bio = user.bio
-    location = user.location
-    user_type = user.user_type
+        # Fetching the necessary data from the User model
+        header_image_url = user.header_image_url
+        bio = user.bio
+        location = user.location
+        user_type = user.user_type
 
-    # Fetch the user's posts
-    posts = (Post
-                .query
-                .filter(Post.user_id == user_id)
-                .order_by(Post.timestamp.desc())
-                .limit(100)
-                .all())
+        # Fetch the user's posts
+        posts = (Post
+                    .query
+                    .filter(Post.user_id == user_id)
+                    .order_by(Post.timestamp.desc())
+                    .limit(100)
+                    .all())
 
-    # Render the template with the necessary data
-    return render_template('users/show.html', 
-                           user=user, 
-                           posts=posts,
-                           location=location,
-                           bio=bio,
-                           header_image_url=header_image_url, 
-                           user_type=user_type)
-
+        # Render the template with the necessary data
+        return render_template('users/show.html', 
+                               user=user, 
+                               posts=posts,
+                               location=location,
+                               bio=bio,
+                               header_image_url=header_image_url, 
+                               user_type=user_type)
+    
+    except Exception as err:
+        flash(f"error {err}")
+        return redirect("/")
 
 # Route to show users a list of people they are following
 @app.route('/users/<int:user_id>/following')
 def show_following(user_id):
+    try:
+        if not g.user:
+            flash("Access unauthorized.", "danger")
+            return redirect("/")
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
+        user = User.query.get_or_404(user_id)
+        return render_template('users/following.html', user=user, user_type=g.user.user_type)
+    except Exception as err:
+        flash(f"error: {err}")
         return redirect("/")
-
-    user = User.query.get_or_404(user_id)
-    return render_template('users/following.html', user=user, user_type=g.user.user_type)
-
 
 # Route to show users a list of followers
 @app.route('/users/<int:user_id>/followers')
 def users_followers(user_id):
-    
-    if not g.user:
-        flash("Access unauthorized.", "danger")
+    try:
+        if not g.user:
+            flash("Access unauthorized.", "danger")
+            return redirect("/")
+
+        user = User.query.get_or_404(user_id)
+        return render_template('users/followers.html', user=user, user_type=g.user.user_type)
+    except Exception as err:
+        flash(f"error: {err}")
         return redirect("/")
-
-    user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user, user_type=g.user.user_type)
-
 
 # Route to add a follow relationship for the logged-in user
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
 def add_follow(follow_id):
+    try:
+        if not g.user:
+            flash("Access unauthorized.", "danger")
+            return redirect("/")
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
+        followed_user = User.query.get_or_404(follow_id)
+        g.user.following.append(followed_user)
+        db.session.commit()
+
+        return redirect(f"/users/{g.user.id}/following")
+    except Exception as err:
+        flash(f"error: {err}")
         return redirect("/")
-
-    followed_user = User.query.get_or_404(follow_id)
-    g.user.following.append(followed_user)
-    db.session.commit()
-
-    return redirect(f"/users/{g.user.id}/following")
-
 
 # Route to stop following a user
 @app.route('/users/stop-following/<int:follow_id>', methods=['POST'])
 def stop_following(follow_id):
+    try:
+        if not g.user:
+            flash("Access unauthorized.", "danger")
+            return redirect("/")
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
+        followed_user = User.query.get(follow_id)
+        g.user.following.remove(followed_user)
+        db.session.commit()
+
+        return redirect(f"/users/{g.user.id}/following")
+    except Exception as err:
+        flash(f"error: {err}")
         return redirect("/")
-
-    followed_user = User.query.get(follow_id)
-    g.user.following.remove(followed_user)
-    db.session.commit()
-
-    return redirect(f"/users/{g.user.id}/following")
-
 
 # Route to show a user's liked posts
 @app.route('/users/<int:user_id>/likes', methods=["GET"])
 def show_likes(user_id):
-    if not g.user:
-        flash("Access unauthorized.", "danger")
+    try:   
+        if not g.user:
+            flash("Access unauthorized.", "danger")
+            return redirect("/")
+
+        user = User.query.get_or_404(user_id)
+        return render_template('users/likes.html', user=user, likes=user.likes, user_type=g.user.user_type)
+    except Exception as err:
+        flash(f"error: {err}")
         return redirect("/")
-
-    user = User.query.get_or_404(user_id)
-    return render_template('users/likes.html', user=user, likes=user.likes, user_type=g.user.user_type)
-
 
 # Route to add or remove a like for a message
 @app.route('/posts/<int:message_id>/like', methods=['POST'])
 def add_like(message_id):
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
+    try:
+        if not g.user:
+            flash("Access unauthorized.", "danger")
+            return redirect("/")
+        # Prevent the user from liking their own message
+        liked_message = Post.query.get_or_404(message_id)
+        if liked_message.user_id == g.user.id:
+            return abort(403)  
+
+        # Toggle like status for the message
+        if liked_message in g.user.likes:
+            g.user.likes.remove(liked_message)
+        else:
+            g.user.likes.append(liked_message)
+
+        db.session.commit()
+
         return redirect("/")
-    # Prevent the user from liking their own message
-    liked_message = Post.query.get_or_404(message_id)
-    if liked_message.user_id == g.user.id:
-        return abort(403)  
-
-    # Toggle like status for the message
-    if liked_message in g.user.likes:
-        g.user.likes.remove(liked_message)
-    else:
-        g.user.likes.append(liked_message)
-
-    db.session.commit()
-
-    return redirect("/")
-
+    
+    except Exception as err:
+        flash(f"error: {err}")
+        return redirect("/")
 
 # Route to update the logged-in user's profile
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
     
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
-
-    # Common form (UserUpdateForm) for all user types
-    form = UserUpdateForm()
-    user_type = g.user.user_type  # Get the user type
-
-    # Initialize user type specific forms
-    fan_form = None
-    organizer_form = None
-    musician_form = None
-
-    if user_type == 'fan':
-        fan_form = FanForm()
-    elif user_type == 'organizer':
-        organizer_form = OrganizerForm()
-    elif user_type == 'musician':
-        musician_form = MusicianForm()
-
-    if form.validate_on_submit():
-        # Authenticate user (confirm password) before making changes
-        user = User.authenticate(username=g.user.username, password=form.password.data)
-        if not user:
-            flash("Access Denied.", "danger")
+    try:
+        if not g.user:
+            flash("Access unauthorized.", "danger")
             return redirect("/")
 
-        # Update common fields
-        try:
-            User.update_user(
-                username=form.username.data or user.username,
-                email=form.email.data,
-                image_url=form.image_url.data or user.image_url,
-                header_image_url=form.header_image_url.data or user.header_image_url,
-                bio=form.bio.data or user.bio,
-                location=form.location.data or user.location,
-                user_id=user.id
-            )
+        # Common form (UserUpdateForm) for all user types
+        form = UserUpdateForm()
+        user_type = g.user.user_type  # Get the user type
 
-            # Handle user type-specific form submissions
-            if user_type == 'fan' and fan_form and fan_form.validate_on_submit():
-                
-                # Update fan-specific data
-                favorite_genre = fan_form.favorite_genre.data
-                favorite_band = fan_form.favorite_band.data
-                favorite_song = fan_form.favorite_song.data
-                concert_ex = fan_form.concert_ex.data
-                overplayed_song = fan_form.overplayed_song.data  
-              # Add logic for updating fan fields
-                success = User.update_user_fan(
-                    g.user.id, 
-                    favorite_genre, 
-                    favorite_band, 
-                    favorite_song, 
-                    concert_ex, 
-                    overplayed_song
+        # Initialize user type specific forms
+        fan_form = None
+        organizer_form = None
+        musician_form = None
+
+        if user_type == 'fan':
+            fan_form = FanForm()
+        elif user_type == 'organizer':
+            organizer_form = OrganizerForm()
+        elif user_type == 'musician':
+            musician_form = MusicianForm()
+
+        if form.validate_on_submit():
+            # Authenticate user (confirm password) before making changes
+            user = User.authenticate(username=g.user.username, password=form.password.data)
+            if not user:
+                flash("Access Denied.", "danger")
+                return redirect("/")
+
+            # Update common fields
+            try:
+                User.update_user(
+                    username=form.username.data or user.username,
+                    email=form.email.data,
+                    image_url=form.image_url.data or user.image_url,
+                    header_image_url=form.header_image_url.data or user.header_image_url,
+                    bio=form.bio.data or user.bio,
+                    location=form.location.data or user.location,
+                    user_id=user.id
                 )
 
-                if success:
-                    flash("Your fan profile has been updated!", "success")
-                    return redirect(url_for('users_show', user_id=g.user.id))
+                # Handle user type-specific form submissions
+                if user_type == 'fan' and fan_form and fan_form.validate_on_submit():
 
-                else:
-                    flash("There was an error updating your profile. Please try again.", "danger")
-                    return redirect(url_for("profile"))
+                    # Update fan-specific data
+                    favorite_genre = fan_form.favorite_genre.data
+                    favorite_band = fan_form.favorite_band.data
+                    favorite_song = fan_form.favorite_song.data
+                    concert_ex = fan_form.concert_ex.data
+                    overplayed_song = fan_form.overplayed_song.data  
+                  # Add logic for updating fan fields
+                    success = User.update_user_fan(
+                        g.user.id, 
+                        favorite_genre, 
+                        favorite_band, 
+                        favorite_song, 
+                        concert_ex, 
+                        overplayed_song
+                    )
 
+                    if success:
+                        flash("Your fan profile has been updated!", "success")
+                        return redirect(url_for('users_show', user_id=g.user.id))
 
-            elif user_type == 'organizer' and organizer_form and organizer_form.validate_on_submit():
-                
-                # Update fan-specific data
-                organization_name = organizer_form.organization_name.data
-                event_description = organizer_form.event_description.data
-                venue_locations = organizer_form.venue_locations.data
-                dates_unavailable = organizer_form.dates_unavailable.data
-                venue_capacity = organizer_form.venue_capacity.data  
-              # Add logic for updating fan fields
-                success = User.update_user_organizer(
-                    g.user.id, 
-                    organization_name, 
-                    event_description, 
-                    venue_locations,
-                    dates_unavailable, 
-                    venue_capacity 
-                    
-                )
-
-                if success:
-                    flash("Your fan profile has been updated!", "success")
-                    return redirect(url_for('users_show', user_id=g.user.id))
-                else:
-                    flash("There was an error updating your profile. Please try again.", "danger")
-                    return redirect(url_for("profile"))
-
-            elif user_type == 'musician' and musician_form and musician_form.validate_on_submit():
-                
-                # Update fan-specific data
-                members = musician_form.members.data
-                music_style= musician_form.music_style.data
-                band_name = musician_form.band_name.data
-                latest_release = musician_form.latest_release.data
-                music_achievments = musician_form.music_achievements.data  
+                    else:
+                        flash("There was an error updating your profile. Please try again.", "danger")
+                        return redirect(url_for("profile"))
 
 
-              # Add logic for updating fan fields
-                success = User.update_user_musician(
-                    g.user.id, 
-                    members, 
-                    music_style, 
-                    band_name, 
-                    latest_release, 
-                    music_achievments
-                )
+                elif user_type == 'organizer' and organizer_form and organizer_form.validate_on_submit():
 
-                if success:
-                    flash("Your fan profile has been updated!", "success")
-                    return redirect(url_for('users_show', user_id=g.user.id))
-                else:
-                    flash("There was an error updating your profile. Please try again.", "danger")
-                    return redirect(url_for("profile"))
+                    # Update fan-specific data
+                    organization_name = organizer_form.organization_name.data
+                    event_description = organizer_form.event_description.data
+                    venue_locations = organizer_form.venue_locations.data
+                    dates_unavailable = organizer_form.dates_unavailable.data
+                    venue_capacity = organizer_form.venue_capacity.data  
+                  # Add logic for updating fan fields
+                    success = User.update_user_organizer(
+                        g.user.id, 
+                        organization_name, 
+                        event_description, 
+                        venue_locations,
+                        dates_unavailable, 
+                        venue_capacity 
 
-        except IntegrityError:
-            flash("Username already taken", 'danger')
-            return render_template('users/edit.html', form=form, user_type=user_type)
+                    )
 
-        return redirect(f"/users/{g.user.id}")
+                    if success:
+                        flash("Your fan profile has been updated!", "success")
+                        return redirect(url_for('users_show', user_id=g.user.id))
+                    else:
+                        flash("There was an error updating your profile. Please try again.", "danger")
+                        return redirect(url_for("profile"))
+
+                elif user_type == 'musician' and musician_form and musician_form.validate_on_submit():
+
+                    # Update fan-specific data
+                    members = musician_form.members.data
+                    music_style= musician_form.music_style.data
+                    band_name = musician_form.band_name.data
+                    latest_release = musician_form.latest_release.data
+                    music_achievments = musician_form.music_achievements.data  
+
+
+                  # Add logic for updating fan fields
+                    success = User.update_user_musician(
+                        g.user.id, 
+                        members, 
+                        music_style, 
+                        band_name, 
+                        latest_release, 
+                        music_achievments
+                    )
+
+                    if success:
+                        flash("Your fan profile has been updated!", "success")
+                        return redirect(url_for('users_show', user_id=g.user.id))
+                    else:
+                        flash("There was an error updating your profile. Please try again.", "danger")
+                        return redirect(url_for("profile"))
+
+            except IntegrityError:
+                flash("Username already taken", 'danger')
+                return render_template('users/edit.html', form=form, user_type=user_type)
+
+            return redirect(f"/users/{g.user.id}")
+    except Exception as err:
+        flash(f"error: {err}")
+        return render_template('users/edit.html', form=form, user_type=user_type)
 
     # Pre-fill the form with current user data if GET request
     form.username.data = g.user.username
@@ -524,22 +551,25 @@ def posts_destroy(message_id):
 @app.route('/')
 def homepage():
     
-    if g.user:
-        # Fetch posts from users the logged-in user is following
-        following_ids = [following.id for following in g.user.following] + [g.user.id]
-        posts = (Post
-                    .query.filter(Post.user_id.in_(following_ids))
-                    .order_by(Post.timestamp.desc())
-                    .limit(100)
-                    .all())
-        liked_post_ids = [post.id for post in g.user.likes]
+    try:
+        if g.user:
+            # Fetch posts from users the logged-in user is following
+            following_ids = [following.id for following in g.user.following] + [g.user.id]
+            posts = (Post
+                        .query.filter(Post.user_id.in_(following_ids))
+                        .order_by(Post.timestamp.desc())
+                        .limit(100)
+                        .all())
+            liked_post_ids = [post.id for post in g.user.likes]
 
-        return render_template('home.html', posts=posts, likes=liked_post_ids, user_type=g.user.user_type)
+            return render_template('home.html', posts=posts, likes=liked_post_ids, user_type=g.user.user_type)
 
-    else:
-        return render_template('home-anon.html')
+        else:
+            return render_template('home-anon.html')
     
-
+    except Exception as err:
+        flash(f"Error: {err}")
+        return render_template('home-anon.html')
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -612,7 +642,6 @@ def search():
     artists = []  # Initialize an empty list to store artist results
     query = None  # Store the query to show on the page if needed
     
-    # Assuming get_user_posts() fetches posts for the current user
     posts = get_user_posts()
     
     if request.method == 'POST':
@@ -624,15 +653,15 @@ def search():
         query = artist_name  # Store the query for rendering in the template
 
         if not artists:
-            return "No artists found.", 404  # Return error if no artists were found
+            return "No artists found.", 404  
  
     # Ensure `user_type` is passed to the template along with other context variables
     return render_template(
         'users/show.html', 
         artists=artists, 
         query=query, 
-        user=g.user,  # Assuming 'g.user' contains the current user object
-        user_type=g.user.user_type,  # Add user_type to context
+        user=g.user,  
+        user_type=g.user.user_type,  
         posts=posts
     )
 
